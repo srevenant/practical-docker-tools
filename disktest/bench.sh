@@ -21,7 +21,7 @@ runfio() {
     while [ $x -le $ITERATIONS ]; do
         echo -n "    iter-$x"
         _fio results/$label-run$x.log "$@"
-        let x--
+        let x++
     done
 }
 
