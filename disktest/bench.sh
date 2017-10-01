@@ -5,7 +5,7 @@ export PATH=$(pwd)/src:$PATH
 if [ 0$1 -gt 0 ]; then
     ITERATIONS=$1
 else
-    ITERATIONS=2
+    ITERATIONS=3
 fi
 
 runfio() {
