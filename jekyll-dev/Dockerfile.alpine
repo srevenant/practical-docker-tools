@@ -2,5 +2,4 @@ FROM ruby:alpine
 RUN apk --no-cache add gcc libc-dev linux-headers make bash libffi-dev 
 RUN gem install jekyll bundler
 WORKDIR /web/
-EXPOSE 4000
 CMD jekyll serve -H 0.0.0.0

@@ -1,0 +1,14 @@
+version: "3.3"
+services:
+  phoenix:
+    build: .
+    ports:
+      - "4000:4000"
+    links:
+      - postgres
+  postgres:
+    image: postgres
+  zombie:
+    build:
+      context: .
+      dockerfile: Dockerfile.zombie

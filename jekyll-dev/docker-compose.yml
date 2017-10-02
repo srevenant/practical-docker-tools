@@ -1,6 +1,6 @@
 version: "3.3"
 services:
-  jekyll:
+  serve:
     build: .
     volumes:
       - ./web:/web

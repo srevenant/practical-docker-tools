@@ -1,0 +1,8 @@
+FROM alpine
+WORKDIR /app/
+RUN apk --no-cache add nodejs nodejs-npm && \
+    npm install jasmine --global && \
+    npm install zombie
+COPY test.js /app/
+CMD sleep 10 && jasmine test.js
+#CMD sleep 900000
