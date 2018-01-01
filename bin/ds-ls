@@ -1,0 +1,112 @@
+#!/usr/bin/env python
+# vim:set expandtab ts=4 sw=4 ai ft=python:
+
+dtools = __import__("docker-tools")
+import re
+import json
+
+################################################################################
+# where keydict is a set of keys, with the value being a store key on store_dict
+def shortest_keysize(store_dict, store_name, keydict):
+
+    def _shortest(size):
+        shorter = dict()
+        for key in keydict:
+            shorter[key[:size]] = keydict[key]
+
+        # we have a match
+        if len(shorter.keys()) == len(keydict.keys()):
+            for shkey in shorter:
+                key = shorter[shkey]
+                store_dict[key][store_name] = shkey
+            return True
+        return False
+
+    for size in range(2, 16):
+        if _shortest(size):
+            break
+
+################################################################################
+def fmt_list(info):
+    for sid in sorted(info.keys(), key=lambda key: info[key]['name']):
+        svc = info[sid]
+        print("{shkey}  {replicas:3}  {name:30} {repo:30} {shcid}".format(**svc))
+
+################################################################################
+def split_image(image):
+    host, repo = (image.split("/") + [None])[:2]
+    if not repo:
+        repo = host
+        host = "docker.io"
+    repo = repo.split("@")[0]
+    return host, repo
+
+################################################################################
+def ds_output(output):
+    info = dict()
+    keys = dict()
+    for line in output.split('\n'):
+        split = line.split('\t')
+        if not line or len(split) != 6:
+            continue
+        sid, name, mode, replicas, img, port = split
+        host, repo = split_image(img)
+
+        keys[sid] = sid # used to shorten
+        info[sid] = dict(name=name,
+                         mode=mode,
+                         img=img,
+                         replicas=replicas,
+                         repo=repo,
+                         port=port,
+                         repohost=host,
+                         shcid='',
+                         shkey='')
+
+    shortest_keysize(info, 'shkey', keys)
+    fmt_list(info)
+
+################################################################################
+def ps_output(output):
+    info = dict()
+    cids = dict()
+    keys = dict()
+    for line in output.split('\n'):
+        split = line.split('\t')
+        if not line or len(split) != 1:
+            continue
+        data = json.loads(dtools.sys_out(["docker", "inspect", split[0]]))[0]
+        cfg = data.get('Config', {})
+        labels = cfg.get('Labels', {})
+        sid = labels.get('com.docker.swarm.service.id')
+        if not sid:
+            print("not a swarm container")
+            continue
+        name = labels.get('com.docker.swarm.service.name')
+        host, repo = split_image(cfg.get('Image'))
+        info[sid] = dict(replicas="?/?",
+                         name=name,
+                         repo=repo,
+                         repohost=host,
+                         shkey='')
+
+        cids[data.get('Id')] = sid
+        keys[sid] = sid
+
+    shortest_keysize(info, 'shkey', keys)
+    shortest_keysize(info, 'shcid', cids)
+    fmt_list(info)
+
+################################################################################
+def main():
+    try:
+        fmt = "{{.ID}}\t{{.Name}}\t{{.Mode}}\t{{.Replicas}}\t{{.Image}}\t{{.Ports}}"
+        ds_output(dtools.sys_out(["docker", "service", "ls", "--format", fmt]))
+    except:
+        print("This node is not a swarm manager, making guesses...")
+        fmt = "{{.ID}}" # \t{{.Names}}\t{{.Status}}"
+        ps_output(dtools.sys_out(["docker", "ps", "--format", "{{.ID}}"]))
+
+################################################################################
+if __name__ == '__main__':
+    main()

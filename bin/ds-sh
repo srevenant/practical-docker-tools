@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+# vim:set expandtab ts=4 sw=4 ai ft=python:
+
+dtools = __import__("docker-tools")
+import sys
+import os
+import re
+import json
+
+def die(*msg):
+    syntax = """
+Syntax: ds-sh {svc-id|svc-name|container-id} [/bin/sh]
+"""
+    if msg:
+        syntax += msg[0]
+    sys.exit(syntax)
+
+def main():
+    if len(sys.argv) == 0:
+        die()
+
+    if len(sys.argv) > 1:
+        shell = sys.argv[1]
+    else:
+        shell = "/bin/sh"
+
+    target = sys.argv[0]
+    containers = dict()
+    for line in dtools.sys_out(["docker", "ps", "--format", "{{.ID}}"]).split('\n'):
+        data = json.loads(dtools.sys_out(["docker", "inspect", line]))[0]
+        cfg = data.get('Config', {})
+        labels = cfg.get('Labels', {})
+        if not data.get('State', {}).get('Running'): # shouldn't happen, but...
+            continue
+
+        data['_svc_id'] = labels.get('com.docker.swarm.service.id')
+        data['_svc_name'] = labels.get('com.docker.swarm.service.name')
+        containers[data.get('Id')] = data
+
+    # start with svc ID
+    matches = dict()
+    def handle_matches(matches):
+        if len(matches.keys()) == 1:
+            cid = matches.keys()[0]
+            print("=> getting shell in " + containers[cid]['Name'])
+            os.execv("/usr/bin/docker", ["docker", "exec", "-it", cid, shell])
+
+        if len(matches.keys()) > 1:
+            die("Too many matches for id=" + target + "\n\n\t" +
+                ", ".join(matches.values()))
+
+    for cid in containers:
+        sid = containers[cid]['_svc_id']
+        if re.search(r'^' + target, sid):
+            #print("sid="+cid)
+            matches[cid] = sid
+
+    handle_matches(matches)
+
+    # try svc name
+    matches = dict()
+    for cid in containers:
+        sname = containers[cid]['_svc_name']
+        if re.search(r'^' + target, sname):
+            #print("name="+sname)
+            matches[cid] = sname
+
+    handle_matches(matches)
+
+    # try container ID
+    matches = dict()
+    for cid in containers:
+        if re.search(r'^' + target, cid):
+            #print("cid="+cid)
+            matches[cid] = cid
+
+    handle_matches(matches)
+
+    die("Unable to find match for id={}".format(target))
+
+
+################################################################################
+if __name__ == '__main__':
+    main()

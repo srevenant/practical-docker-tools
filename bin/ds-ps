@@ -1,0 +1,84 @@
+#!/usr/bin/env python
+# vim:set expandtab ts=4 sw=4 ai ft=python:
+
+dtools = __import__("docker-tools")
+import re
+import sys
+
+def main():
+    if len(sys.argv) == 0:
+        sys.exit("Syntax: ds-ps swarm-svc-id [-a|--all]")
+
+    show_all = False
+    if len(sys.argv) == 2:
+        if sys.argv[1] in ("-a", "--all"):
+            show_all = True
+
+    dtc = dtools.Core({})
+    fmt = "{{.ID}}\t{{.Name}}\t{{.Image}}\t{{.Node}}\t{{.DesiredState}}\t{{.CurrentState}}\t{{.Error}}"
+    info = dict()
+    status, output = dtc.sys_out(["docker", "service", "ps", sys.argv[0], "--format", fmt], abort=True)
+    idsz = 0
+
+    nodes = dict()
+    states = dict()
+    maxes = list([0, 0, 0, 0])
+
+    def ismax(elem, xmax):
+        if len(elem) > maxes[xmax]:
+            maxes[xmax] = len(elem)
+        return maxes[xmax]
+
+    for line in output.split('\n'):
+        split = line.split('\t')
+        if not line or len(split) != 7:
+            continue
+        sid, name, img, node, desired, current, error = split
+        host, repo = (img.split("/") + [None])[:2]
+        if not repo:
+            repo = host
+            host = "docker.io"
+
+        ismax(desired, 0)
+        ismax(node, 1)
+        ismax(name, 2)
+        ismax(repo, 3)
+
+        mydata = dict(name=name,
+                      node=node,
+                      img=img,
+                      repo=repo,
+                      repohost=host,
+                      desired=desired,
+                      current=current,
+                      error=error)
+        if not states.get(desired):
+            states[desired] = dict()
+        states[desired][sid] = mydata
+
+    if not show_all and states.get('Shutdown'):
+        del(states['Shutdown'])
+
+    fmt = "{desired:" + str(maxes[0]) + \
+          "} {node:" + str(maxes[1]) + \
+          "} {name:" + str(maxes[2]) + \
+          "} {repo:" + str(maxes[3]) + \
+          "} {current}"
+    for state in sorted(states.keys()):
+        info = states[state]
+
+        for sid in sorted(info.keys(), key=lambda key: info[key]['node']):
+            svc = info[sid]
+            print(fmt.format(**svc))
+
+def longest(array):
+    max = 0
+    for key in array:
+        if len(key) > max:
+            max = len(key)
+    return max
+
+################################################################################
+if __name__ == '__main__':
+    main()
+

@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+# vim:set expandtab ts=4 sw=4 ai ft=python:
+
+dtools = __import__("docker-tools")
+import re
+
+def main():
+    dtc = dtools.Core({})
+    fmt = "{{.ID}}\t{{.Name}}"
+    info = dict()
+    status, output = dtc.sys_out(["docker", "service", "ls", "--format", fmt], abort=True)
+    print("Updating services...")
+    for line in output.split('\n'):
+        split = line.split('\t')
+        if not line or len(split) != 2:
+            continue
+        print("  docker service update --with-registry-auth {} --detach=true # {}".format(*split))
+        status, output = dtc.sys_out(["docker", "service", "update", "--with-registry-auth", split[0], "--detach=true"])
+        if not status:
+            print(output)
+
+################################################################################
+if __name__ == '__main__':
+    main()
+

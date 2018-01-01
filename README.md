@@ -1,5 +1,5 @@
-# Docker Mind Shift
+# Practical Docker
 
-Repo for Docker Mind Shift book
+Tools and Reference for the book Practical Docker.
 
 This is a Work in progress; ping me if you want to be a reviewer

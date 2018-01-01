@@ -1,0 +1,13 @@
+version: "3.3"
+services:
+  hello:
+    build: .
+    image: node-hello
+    ports:
+      - published: 8080
+        target: 8080
+        mode: ingress
+    environment:
+      - PORT=8080
+    deploy:
+      replicas: 4
