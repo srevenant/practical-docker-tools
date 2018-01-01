@@ -6,14 +6,9 @@ import sys
 
 def main():
     if len(sys.argv) == 0:
-        sys.exit("Syntax: ds-sh {svc-id|svc-name|container-id} [/bin/sh]")
+        sys.exit("Syntax: ds-log {svc-id|svc-name|container-id} [docker logs opts]")
 
-    if len(sys.argv) > 1:
-        shell = sys.argv[1]
-    else:
-        shell = "/bin/sh"
-
-    dtools.find_and_execv(sys.argv[0], ["docker", "exec", "-it", None, shell])
+    dtools.find_and_execv(sys.argv[0], ["docker", "logs"] + sys.argv[1:] + [None])
 
 ################################################################################
 if __name__ == '__main__':

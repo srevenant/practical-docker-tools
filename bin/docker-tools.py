@@ -10,6 +10,8 @@ import time
 import json
 import subprocess
 import traceback
+import shutil
+import re
 
 log_hdr = 0
 log_cmd = 1
@@ -23,6 +25,13 @@ colors = {
     "fggray":"\033[37m",
     "reset":"\033[0m",
 }
+
+################################################################################
+def which(target):
+    for path in os.environ["PATH"].split(os.pathsep):
+        if os.path.exists(os.path.join(path, target)):
+            return os.path.join(path, target)
+    raise Exception("Unable to find {}".format(target))
 
 ################################################################################
 # simple subprocess caller
@@ -87,6 +96,68 @@ def shortest_keysize(info, maxsz):
         if _shortest(size, info.keys()):
             break
 
+################################################################################
+def find_and_execv(target, exc):
+    """
+    exc is an array of what to os.execv(), where the first argument is converted
+    into a full path, and the first array element that is None is converted to a
+    container ID as matched by the target
+    """
+    containers = dict()
+    for line in sys_out(["docker", "ps", "--format", "{{.ID}}"]).split('\n'):
+        data = json.loads(sys_out(["docker", "inspect", line]))[0]
+        cfg = data.get('Config', {})
+        labels = cfg.get('Labels', {})
+        if not data.get('State', {}).get('Running'): # shouldn't happen, but...
+            continue
+
+        data['_svc_id'] = labels.get('com.docker.swarm.service.id')
+        data['_svc_name'] = labels.get('com.docker.swarm.service.name')
+        containers[data.get('Id')] = data
+
+    # start with svc ID
+    matches = dict()
+    def handle_matches(matches, exc):
+        if len(matches.keys()) == 1:
+            cid = matches.keys()[0]
+            path = which(exc[0])
+            exc[exc.index(None)] = cid
+            print(">> " + " ".join(exc))
+            os.execv(path, exc)
+
+        if len(matches.keys()) > 1:
+            sys.exit("Too many matches for id=" + target + "\n\n\t" +
+                     ", ".join(matches.values()))
+
+    for cid in containers:
+        sid = containers[cid]['_svc_id']
+        if re.search(r'^' + target, sid):
+            matches[cid] = sid
+
+    handle_matches(matches, exc)
+
+    # try svc name
+    matches = dict()
+    for cid in containers:
+        sname = containers[cid]['_svc_name']
+        if re.search(r'^' + target, sname):
+            matches[cid] = sname
+
+    handle_matches(matches, exc)
+
+    # try container ID
+    matches = dict()
+    for cid in containers:
+        if re.search(r'^' + target, cid):
+            matches[cid] = cid
+
+    handle_matches(matches, exc)
+
+    sys.exit("Unable to find match for id={}".format(target))
+
+################################################################################
+if __name__ == '__main__':
+    main()
 ################################################################################
 class Core(object):
     outfd = sys.stdout
