@@ -7,7 +7,7 @@ services:
       - ./cfg:/fio/cfg
       - ./results:/fio/results
       - vol1-named:/vol1-named:cached
-      - ./vol2-bind:/vol2-bind/test:cached
+      - /vol2-bind:/vol2-bind/test:cached
 # to test raw disk i/o as a baseline
 #    devices:
 #      - /dev/sdd:/dev/sdd

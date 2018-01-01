@@ -10,12 +10,12 @@ RUN mix local.hex --force && \
     mix release.init && mix release
 
 # switch to a new base image
-FROM elixir:alpine
-
-WORKDIR /app
-RUN apk --no-cache add bash
-
-# copy only our binary release from the first image into the new image
-COPY --from=0 /app/_build/dev/rel/hello /app/
-
-CMD /app/bin/hello console
+#FROM elixir:alpine
+#
+#WORKDIR /app
+#RUN apk --no-cache add bash
+#
+## copy only our binary release from the first image into the new image
+#COPY --from=0 /app/_build/dev/rel/hello /app/
+#
+#CMD /app/bin/hello console
