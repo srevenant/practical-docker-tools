@@ -1,0 +1,9 @@
+version: "3.2"
+services:
+  sighandler:
+    build: .
+    image: sighandler
+    stop_signal: SIGQUIT
+    #stop_grace_period: 3s
+    environment:
+     - PYTHONUNBUFFERED=true
