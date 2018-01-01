@@ -1,0 +1,10 @@
+version: '3.2'
+services:
+  haproxy:
+    build: .
+    volumes:
+      - /dev/log:/dev/log
+    ports:
+      - published: 587
+        target: 587
+        mode: ingress
