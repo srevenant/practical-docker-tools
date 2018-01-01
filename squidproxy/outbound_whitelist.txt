@@ -1,0 +1,9 @@
+# aws ECR
+[0-9]*.dkr\.ecr\.us-west-2\.amazonaws\.com:
+^477772436619\.dkr\.ecr\.us-west-2\.amazonaws\.com:
+# general aws
+^(s3|ec2|route53|rds|ecr)\.amazonaws\.com:
+^(s3|ec2|route53|rds|ecr)\.(us-(east|west)-[0-9])\.amazonaws\.com:
+# docker swarm needs
+^registry.*\.docker\.io:443$
+^auth\.docker\.io:443$

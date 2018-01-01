@@ -1,0 +1,5 @@
+#!/bin/sh 
+# squid really wants to run as a service user 'squid'
+chown -R squid:squid /var/cache/squid
+chown squid:squid /dev/stdout /dev/stderr
+exec /usr/sbin/squid -N
