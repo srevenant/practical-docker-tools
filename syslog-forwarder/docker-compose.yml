@@ -1,0 +1,10 @@
+version: "3.2"
+services:
+  hello:
+    build: .
+    ports:
+      - published: 8080
+        target: 8080
+        mode: host
+    environment:
+      - PORT=8080
