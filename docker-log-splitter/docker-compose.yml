@@ -1,0 +1,16 @@
+version: "3.0"
+services:
+  uf:
+    hostname: "docker-log-splitter"
+    environment:
+#      - ROTATE_FILE_BYTES=x # where x is other than default of 10485760 (10mb)
+#      - IGNORE_CONTAINERS_RX=... # regex for container names to ignore
+#      - AGENT_CONFIG=... # comes in from Dockerfile with okay defaults
+      - PYTHONIOENCODING=utf-8
+    build: .
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/host/log
+      - docker-log:/log
+    deploy:
+       mode: global
