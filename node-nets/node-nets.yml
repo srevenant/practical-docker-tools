@@ -1,0 +1,21 @@
+version: "3.3"
+services:
+  hello:
+    build: .
+    image: node-networks
+    networks:
+      - hello-net
+    ports:
+      - target: 8080
+        mode: ingress
+    environment:
+      - PORT=8080
+    deploy:
+      replicas: 4
+networks:
+  hello-net:
+    driver_opts:
+      encrypted: "true"
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16

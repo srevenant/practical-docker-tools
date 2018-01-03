@@ -30,7 +30,8 @@ def shortest_keysize(store_dict, store_name, keydict):
 def fmt_list(info):
     for sid in sorted(info.keys(), key=lambda key: info[key]['name']):
         svc = info[sid]
-        print("{shkey}  {replicas:3}  {name:30} {repo:30} {shcid}".format(**svc))
+        print("{shkey} {replicas:^5} {name:30} {repo:30} {shcid}".format(**svc))
+
 
 ################################################################################
 def split_image(image):

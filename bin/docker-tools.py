@@ -127,7 +127,7 @@ def find_and_execv(target, exc):
 
         if len(matches.keys()) > 1:
             sys.exit("Too many matches for id=" + target + "\n\n\t" +
-                     ", ".join(matches.values()))
+                     "\n\t".join([x[0:12] for x in matches.keys()]))
 
     for cid in containers:
         sid = containers[cid]['_svc_id']
