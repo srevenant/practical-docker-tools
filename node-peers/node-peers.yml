@@ -1,0 +1,13 @@
+version: "3.3"
+services:
+  hello:
+#    hostname: "friends-{{.Task.Slot}}"
+    build: .
+    image: node-peers
+    ports:
+      - target: 8080
+        mode: ingress
+    environment:
+      - PORT=8080
+    deploy:
+      replicas: 4
