@@ -35,10 +35,10 @@ _fio() {
     fio "$@" > $log 2>&1
 }
 
-#runfio vol1-named --directory=/vol1-named ./cfg/duress.fio
+runfio vol1-named --directory=/vol1-named ./cfg/duress.fio
 runfio vol2-bind --directory=/vol2-bind ./cfg/duress.fio
-#runfio vol3-local --directory=/vol3-local ./cfg/duress.fio
+runfio vol3-local --directory=/vol3-local ./cfg/duress.fio
 
 if [ -e /dev/sdd ]; then
-    runfio vol3-raw --filename=/dev/sdd ./cfg/duress.fio
+    runfio vol4-raw --filename=/dev/sdd ./cfg/duress.fio
 fi
