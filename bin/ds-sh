@@ -5,6 +5,7 @@ dtools = __import__("docker-tools")
 import sys
 
 def main():
+    cmd = sys.argv.pop(0)
     if len(sys.argv) == 0:
         sys.exit("Syntax: ds-sh {svc-id|svc-name|container-id} [/bin/sh]")
 

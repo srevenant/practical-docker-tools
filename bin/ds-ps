@@ -6,6 +6,7 @@ import re
 import sys
 
 def main():
+    cmd = sys.argv.pop(0)
     if len(sys.argv) == 0:
         sys.exit("Syntax: ds-ps swarm-svc-id [-a|--all]")
 

@@ -32,7 +32,6 @@ def fmt_list(info):
         svc = info[sid]
         print("{shkey} {replicas:^5} {name:30} {repo:30} {shcid}".format(**svc))
 
-
 ################################################################################
 def split_image(image):
     host, repo = (image.split("/") + [None])[:2]
@@ -46,11 +45,13 @@ def split_image(image):
 def ds_output(output):
     info = dict()
     keys = dict()
+    if not output:
+        raise Exception("No values?")
     for line in output.split('\n'):
         split = line.split('\t')
-        if not line or len(split) != 6:
+        if not line:
             continue
-        sid, name, mode, replicas, img, port = split
+        sid, name, mode, replicas, img = split[0:5]
         host, repo = split_image(img)
 
         keys[sid] = sid # used to shorten
@@ -59,7 +60,6 @@ def ds_output(output):
                          img=img,
                          replicas=replicas,
                          repo=repo,
-                         port=port,
                          repohost=host,
                          shcid='',
                          shkey='')
@@ -79,18 +79,19 @@ def ps_output(output):
         data = json.loads(dtools.sys_out(["docker", "inspect", split[0]]))[0]
         cfg = data.get('Config', {})
         labels = cfg.get('Labels', {})
+        host, repo = split_image(cfg.get('Image'))
         sid = labels.get('com.docker.swarm.service.id')
         if not sid:
-            print("not a swarm container")
-            continue
-        name = labels.get('com.docker.swarm.service.name')
-        host, repo = split_image(cfg.get('Image'))
+            name = "{}:{}".format(cfg.get('Image'), data.get('Name'))
+            sid = data.get('Id')
+        else:
+            name = labels.get('com.docker.swarm.service.name')
+
         info[sid] = dict(replicas="?/?",
                          name=name,
                          repo=repo,
                          repohost=host,
                          shkey='')
-
         cids[data.get('Id')] = sid
         keys[sid] = sid
 
@@ -104,7 +105,7 @@ def main():
         fmt = "{{.ID}}\t{{.Name}}\t{{.Mode}}\t{{.Replicas}}\t{{.Image}}\t{{.Ports}}"
         ds_output(dtools.sys_out(["docker", "service", "ls", "--format", fmt]))
     except:
-        print("This node is not a swarm manager, making guesses...")
+        print("No swarm service data, making guesses...")
         fmt = "{{.ID}}" # \t{{.Names}}\t{{.Status}}"
         ps_output(dtools.sys_out(["docker", "ps", "--format", "{{.ID}}"]))
 

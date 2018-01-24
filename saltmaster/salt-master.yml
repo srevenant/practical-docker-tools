@@ -1,0 +1,17 @@
+version: '3.2'
+services:
+  master:
+    image: salt-master:latest
+    build: .
+    hostname: "salt-master-{{.Task.Slot}}"
+    volumes:
+      - /data/saltmaster/pki:/etc/salt/pki
+      - /data/saltmaster/cache:/var/cache/salt
+      - /data/saltmaster/log:/var/log/salt
+    ports:
+      - published: 4505
+        target: 4505
+        mode: host
+      - published: 4506
+        target: 4506
+        mode: host

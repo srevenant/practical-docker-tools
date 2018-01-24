@@ -111,8 +111,8 @@ def find_and_execv(target, exc):
         if not data.get('State', {}).get('Running'): # shouldn't happen, but...
             continue
 
-        data['_svc_id'] = labels.get('com.docker.swarm.service.id')
-        data['_svc_name'] = labels.get('com.docker.swarm.service.name')
+        data['_svc_id'] = labels.get('com.docker.swarm.service.id') or ''
+        data['_svc_name'] = labels.get('com.docker.swarm.service.name') or ''
         containers[data.get('Id')] = data
 
     # start with svc ID
@@ -131,8 +131,9 @@ def find_and_execv(target, exc):
 
     for cid in containers:
         sid = containers[cid]['_svc_id']
-        if re.search(r'^' + target, sid):
-            matches[cid] = sid
+        if sid:
+            if re.search(r'^' + target, sid):
+                matches[cid] = sid
 
     handle_matches(matches, exc)
 
@@ -140,8 +141,9 @@ def find_and_execv(target, exc):
     matches = dict()
     for cid in containers:
         sname = containers[cid]['_svc_name']
-        if re.search(r'^' + target, sname):
-            matches[cid] = sname
+        if sname:
+            if re.search(r'^' + target, sname):
+                matches[cid] = sname
 
     handle_matches(matches, exc)
 
@@ -167,7 +169,6 @@ class Core(object):
                         LOGIN_MAX_AGE=11,
                         REGION=""))
     ecr_last = ""
-    _cmd = sys.argv.pop(0)
     _syntax = None
     _debug = False
 

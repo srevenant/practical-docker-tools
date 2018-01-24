@@ -2,13 +2,19 @@
 # vim:set expandtab ts=4 sw=4 ai ft=python:
 
 dtools = __import__("docker-tools")
+import argparse
 import sys
 
 def main():
-    if len(sys.argv) == 0:
-        sys.exit("Syntax: ds-log {svc-id|svc-name|container-id} [docker logs opts]")
+    parser = argparse.ArgumentParser(usage="ds-log {svc-id|svc-name|container-id} [--follow|-f]")
+    parser.add_argument("--follow", "-f", action='store_true')
+    parser.add_argument("target")
+    args = parser.parse_args()
 
-    dtools.find_and_execv(sys.argv[0], ["docker", "logs"] + sys.argv[1:] + [None])
+    extra = []
+    if args.follow:
+        extra = ['-f']
+    dtools.find_and_execv(args.target, ["docker", "logs"] + extra + [None])
 
 ################################################################################
 if __name__ == '__main__':
