@@ -2,7 +2,7 @@ version: "3.3"
 services:
   hello:
     build: .
-    image: node-hello
+    image: node-hello:tst
     ports:
       - published: 8080
         target: 8080

@@ -1,0 +1,18 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: node-hello
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: node-hello
+    spec:
+      containers:
+      - image: revenant/node-hello:tst
+        imagePullPolicy: Always
+        name: node-hello
+        ports:
+        - containerPort: 8080
+          hostPort: 8080
