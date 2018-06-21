@@ -1,0 +1,212 @@
+#!/usr/bin/env python
+# vim:set expandtab ts=4 sw=4 ai ft=python:
+"""
+
+Wrapper script around common docker functions for an app
+
+Meant to run with any python version, so no specific requirements are made.
+
+"""
+
+import subprocess
+import argparse
+import sys
+import os
+import json
+import re
+import copy
+
+__cmd__ = sys.argv[0]
+sys.argv.pop(0)
+
+################################################################################
+def optnames():
+    shortest = dict()
+    remaining = copy.copy(os.listdir('docker'))
+    for size in range(1, 16):
+        if not remaining:
+            break
+
+        for elem in copy.copy(remaining):
+            sub = elem[:size]
+            if shortest.get(sub):
+                remaining.append(shortest[sub])
+                del(shortest[sub])
+            else:
+                shortest[sub] = elem
+                remaining.remove(elem)
+
+    return [key + "?" + value[len(key):] for key,value in shortest.items()]
+
+################################################################################
+def main():
+    os.environ['PYTHONUNBUFFERED'] = 'true'
+
+    # reminder: update syntax()
+    mode = getarg("mode", *optnames())[0]
+    app = getapp(mode)
+
+    # reminder: update syntax()
+    action = getarg("action", "run", "iex", "mix", "ps", "down", "up", "exec",
+                    "sh", "run-sh", "raw-sh", "kill", "build", "scale", "prune")[0]
+    extra = sys.argv
+
+    cmd = [getcmd("docker-compose"), "-f", "docker/" + mode + "/docker-compose.yml"]
+
+    # direct pass-thru.  add: `app scale=3` to cluster
+    if action in ["build", "ps", "exec", "up", "run", "down", "kill"]:
+        cmd += [action]
+        #if mode == "tst" and action == "up":
+        #    cmd += ["--force-recreate", "--build", "--abort-on-container-exit", "--exit-code-from", app]
+        if action == "build":
+            cmd += [app]
+    elif action == "scale":
+        if extra:
+            cmd += ["scale", app + "=" + extra[0]]
+            extra = extra[1:]
+        else:
+            cmd += ["scale", app + "=3"]
+    elif action == "prune":
+        cmd = [getcmd("docker"), "system", "prune", "-f"]
+    elif action == "iex":
+        cmd += ["run", app, "./docker/reflex-env", "iex"]
+    elif action == "mix":
+        cmd += ["run", app, "./docker/reflex-env", "mix"]
+    elif action == "sh":
+        cmd += ["exec", app, "/bin/sh"]
+    elif action == "run-sh":
+        cmd += ["run", app, "/bin/sh"]
+    elif action == "raw-sh":
+        img = getimage(mode, app)
+        cmd = [getcmd("docker"), "run", "-it", "--entrypoint", "/bin/sh", img]
+
+    if extra:
+        cmd += extra
+    
+    do(cmd)
+
+################################################################################
+# this is all boiler-plate stuff to make the main work
+def getcmd(cmd):
+    path= os.getenv('PATH')
+    for part in path.split(os.path.pathsep):
+        path = os.path.join(part, cmd)
+        if os.path.exists(path) and os.access(path, os.X_OK):
+            return path
+    exit("Unable to find '" + cmd + "' in your path!")
+
+def do(args):
+    sys.stderr.write("\n>>>")
+    arg0 = True
+    for arg in args:
+        if arg0:
+            arg = os.path.basename(arg)
+            arg0 = False
+        if " " in arg:
+            arg = json.dumps(arg) # easy way to get quoting right
+        sys.stderr.write(" " + arg)
+    sys.stderr.write("\n\n")
+    os.execv(args[0], args)
+
+################################################################################
+# note: I could load pyyaml, but I want to keep out external dependencies
+def getimage(mode, app):
+    with open("docker/" + mode + "/docker-compose.yml") as cfg:
+        in_svc=False
+        for line in cfg:
+            if in_svc:
+                if re.match(r'^\s*image:', line):
+                    image = line.split(':')[1].strip()
+                    return image
+            elif re.match(r'^\s*services:', line):
+                in_svc = True
+    sys.exit("Unable to find image?")
+
+################################################################################
+# note: I could load pyyaml, but I want to keep out external dependencies
+def getapp(mode):
+    compose = 'docker/' + mode + '/docker-compose.yml'
+
+    if not os.path.exists(compose):
+        sys.exit("Cannot find compose file: " + compose)
+
+    with open(compose) as cfg:
+        in_svc = False
+        for line in cfg:
+            if in_svc:
+                match = re.search(r'^\s*([a-z][^:]+)', line)
+                if match:
+                    print("Using service `{}` in: {}".format(match.group(1), compose))
+                    return match.group(1)
+            elif re.match(r'^\s*services:', line):
+                in_svc = True
+    sys.exit("Cannot find first service in compose file: " + compose)
+
+################################################################################
+def optmatch(pattern, match):
+    match = str(match).lower().split("=", 1)[0]
+    for variant in pattern.split("|"):
+        req, opt = (variant + "?").split("?")[0:2]
+        if req == match:
+            return True
+        for char in opt:
+            req = req + char
+            if req == match:
+                return True
+    return False
+
+def getarg(label, *opts):
+    if not sys.argv:
+        syntax()
+    arg = sys.argv.pop(0)
+    for opt in opts:
+        if optmatch(opt, arg):
+            value = None
+            if '=' in opt:
+                if '=' in arg:
+                    arg, value = arg.split("=", 1)
+                elif len(sys.argv):
+                    value = sys.argv.pop(0)
+                else:
+                    syntax("Unable to get value for " + opt)
+            opt = opt.split("|")[0]
+            return opt.replace("?", ""), value
+    syntax("No match for {" + label + "}")
+
+def syntax(*err):
+    opts = optnames()
+    print("""
+Syntax: """ + __cmd__ + """ {mode} {action} [extra args...]
+
+Any extra arguments are passed onto following commands.
+
+{mode} is one of the run modes (from ./docker/ folder):
+  """ + "\n  ".join(opts) + """
+
+{action} is any of:
+  run*      - run a one-off command in the app container
+  ps*       - list what is running
+  up*       - bring up the whole stack
+  down*     - take down the whole stack
+  kill*     - kill containers
+  build*    - build the app service
+  exec      - execute a command in a running app container
+  mix       - run a mix task
+  iex       - get the elixir repl
+  sh        - get a shell in the running app container, on
+              the compose stack (with db)
+  run-sh    - get a shell in a new app container (not the
+              one currently live).
+  raw-sh    - skip compose, just run the container and a shell
+  scale X   - scale the app service to a cluster
+  prune     - cleanup derelict containers
+
+* these are wrapped pass-thru to docker-compose
+    """)
+    if err:
+        print("==> " + err[0] + "\n")
+    sys.exit(0)
+
+if __name__ == '__main__':
+    main()
+
