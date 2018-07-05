@@ -21,6 +21,7 @@ Three disk types:
 * vol2-bind = a bind volume mount from outside the container into the container, with `:cached` tuning
 * vol3-local = using the "local" container layer
 
+
 |                  | Mac/D       | Mac/X    | mac-f | 
 | vol1-named read  | 4.1k IOPs   | |
 | vol1-named write | 13.9k IOPs  | |
