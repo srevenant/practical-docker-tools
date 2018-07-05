@@ -23,9 +23,10 @@ Three disk types:
 
 
 |                  | Mac/D       | Mac/X    | mac-f | 
-| vol1-named read  | 4.1k IOPs   | |
-| vol1-named write | 13.9k IOPs  | |
-| vol2-bind read   | 482k IOPs   | |
-| vol2-bind write  | 12.2k IOPs  | |
-| vol3-local read  | 1,144k IOPs | |
-| vol3-local write | 7.9k IOPs   | |
+|------------------|-------------|----------|-------|
+| vol1-named read  | 4.1k IOPs   |          |       |
+| vol1-named write | 13.9k IOPs  |          |       |
+| vol2-bind read   | 482k IOPs   |          |       |
+| vol2-bind write  | 12.2k IOPs  |          |       |
+| vol3-local read  | 1,144k IOPs |          |       |
+| vol3-local write | 7.9k IOPs   |          |       |
