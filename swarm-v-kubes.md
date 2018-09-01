@@ -6,8 +6,7 @@ Docker Swarm is nice in it's simplicity, but lacking in it's breadth, which is w
 
 ## Concepts
 
-* **Nodes** are the Linux machines which run Docker, to host containers.
-* **Overlay Network** -
+* **Nodes** - The host computers which run Docker, to run containers.
 * **Groups of Services** - Swarm and Kubernetes both are about orchestrating services when run in a cluster of nodes working together.  In Swarm a group of services is a *Stack*, and uses the *Docker Compose* file syntax, which comes with some assumptions; where Kubernetes gives additional control/power, it comes with added complexity because you have to be more explicit in your definitions.  Instead of a single Docker Compose file,  you have a file with different concepts, including:
     * *Pod* - a set of resources which should be scheduled on the same node together, such as a container and a volume, or two containers.
     * *Deployment* - groups of Pods
