@@ -29,15 +29,16 @@ This is a WIP, please contact me with any corrections/updates you may feel are a
 
 | Concept| Swarm | Kubes|
 | ----- |----|-----|
-| Management Nodes | Manager | Master|
+| Management Nodes | Manager | Master |
+| Container+Volume | Docker Compose File | Pod |
+| Group of services | Docker Compose File | Deployment |
+| Config File | see below| see below|
 | Start cluster | docker swarm init | kubeadm init<br> minikube start|
 | Run Services (raw) | docker service create {..} | kubectl run {name} {..}<br>kubectl expose deployment|
-| Group of services | Docker Compose File | Deployment|
 | Deploy a service group | docker stack deploy -c {cfg} {name} | kubectl apply -f {cfg}|
-| Config File | see below| see below|
 | Console in a Container | (limit: to node)<br>docker exec -it {container} /bin/bash| kubectl exec -it {pod} /bin/bash|
 | Node resource usage | | kubectl top node|
-| List all containers | (per node)docker ps| kubectl get pods|
+| List all containers | (per node)<br>docker ps| kubectl get pods|
 | List services | docker service ls | kubectl get services|
 | List all containers within a service | docker service ps {name} | kubectl get -n {name} pods -a|
 | Scale out | docker service update --replicas=3 {name}|kubectl scale --replicas=3 deployment/{name}|
