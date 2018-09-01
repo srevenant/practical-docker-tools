@@ -2,7 +2,7 @@
 
 This is a cheatsheet for comparing Docker with Swarm and Kubernetes.
 
-Docker Swarm is nice in it's simplicity, but lacking in it's breadth, which is where Docker with Kubernetes comes to play.  For simplicity, I am referring to Kubernetes as Kubes, rather than the other convention of k8s.
+Docker Swarm is nice in it's simplicity, but lacking in it's breadth, which is where Docker with Kubernetes comes to play.
 
 ## Concepts
 
@@ -25,21 +25,23 @@ Docker includes all of the tools for Swarm, as part of the stock Installation.  
 
 ## Comparisons
 
-| Concept| Swarm | Kubes
-| ----- |
-| Management Nodes | Manager | Master
-| Start cluster | docker swarm init | kubeadm init<br> minikube start
-| Run Services (raw) | docker service create {..} | kubectl run {name} {..}<br>kubectl expose deployment
-| Group of services | Docker Compose File | Deployment
-| Deploy a service group | docker stack deploy -c {cfg} {name} | kubectl apply -f {cfg}
-| Config File | see below| see below|
-| Console in a Container | (limit: to node)<br>docker exec -it {container} /bin/bash| kubectl exec -it {pod} /bin/bash
-| Node resource usage | | kubectl top node
-| List all containers | (per node)docker ps| kubectl get pods
-| List services | docker service ls | kubectl get services
-| List all containers within a service | docker service ps {name} | kubectl get -n {name} pods -a
-| Scale out | docker service update --replicas=3 {name}|kubectl scale --replicas=3 deployment/{name}
+This is a WIP, please contact me with any corrections/updates you may feel are appropriate.  Thanks!
 
+| Concept| Swarm | Kubes|
+| ----- |----|-----|
+| Management Nodes | Manager | Master|
+| Start cluster | docker swarm init | kubeadm init<br> minikube start|
+| Run Services (raw) | docker service create {..} | kubectl run {name} {..}<br>kubectl expose deployment|
+| Group of services | Docker Compose File | Deployment|
+| Deploy a service group | docker stack deploy -c {cfg} {name} | kubectl apply -f {cfg}|
+| Config File | see below| see below|
+| Console in a Container | (limit: to node)<br>docker exec -it {container} /bin/bash| kubectl exec -it {pod} /bin/bash|
+| Node resource usage | | kubectl top node|
+| List all containers | (per node)docker ps| kubectl get pods|
+| List services | docker service ls | kubectl get services|
+| List all containers within a service | docker service ps {name} | kubectl get -n {name} pods -a|
+| Scale out | docker service update --replicas=3 {name}|kubectl scale --replicas=3 deployment/{name}|
+| Pull Logs for a service | docker service logs {name} | |
 
 Docker Swarm Stack file `node-hello-swarm.yml`:
 
