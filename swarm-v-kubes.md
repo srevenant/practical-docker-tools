@@ -35,17 +35,18 @@ This is a WIP, please contact me with any corrections/updates you may feel are a
 | Container+Volume | Docker Compose File | Pod |
 | Group of services | Docker Compose File | Deployment |
 | Config File | see below| see below|
-| Start cluster | docker swarm init | kubeadm init<br> minikube start|
-| Run Services (raw) | docker service create {..} | kubectl run {name} {..}<br>kubectl expose deployment|
-| Deploy a service group | docker stack deploy -c {cfg} {name} | kubectl apply -f {cfg}|
-| Console in a Container | (local to node only)<br>docker exec -it {container} /bin/bash | kubectl exec -it {pod} /bin/bash |
-| Node resource usage | | kubectl top node|
-| List all containers | (local to node only)<br>docker ps {name} | kubectl get pods {name}|
-| List services | docker service ls | kubectl get services|
-| List all containers within a service | docker service ps {name} | kubectl get -n {name} pods -a|
-| Scale out | docker service update --replicas=3 {name}|kubectl scale --replicas=3 deployment/{name}|
-| Pull Logs for a service | docker service logs {name} | kubectl logs {name} |
-| Port Forward to remote container | n/a | kubectl port-forward |
+| Start cluster | `docker swarm init` | `kubeadm init {..}`<br>OR: `minikube start {..}`|
+| Run Services (raw) | `docker service create {..}` | `kubectl run {name} {..}`<br>`kubectl expose deployment` |
+| Deploy a service group | `docker stack deploy -c {cfg} {name}` | `kubectl apply -f {cfg}`|
+| Console in a Container | (local to node only)<br>`docker exec -it {container} /bin/sh` | `kubectl exec -it {pod} /bin/sh` |
+| Node resource usage | ? | `kubectl top node`|
+| List all containers | (local to node only)<br>`docker ps {name}` | `kubectl get pods {name}`|
+| List services | `docker service ls` | `kubectl get services`|
+| List all containers within a service | `docker service ps {name}` | `kubectl get -n {name} pods -a`|
+| Scale out | `docker service update --replicas=3 {name}`|`kubectl scale --replicas=3 deployment/{name}`|
+| Update w/new Image | `docker service update --image={img} {name}`| ? |
+| Pull Logs for a service | `docker service logs {name}` | `kubectl logs {name}` |
+| Port Forward to remote container | n/a | `kubectl port-forward` |
 
 Docker Swarm Stack file `node-hello-swarm.yml`:
 
