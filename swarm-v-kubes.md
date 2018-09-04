@@ -12,7 +12,7 @@ Docker Swarm is nice in it's simplicity, but lacking in it's breadth, which is w
     * *Deployment* - groups of Pods
     * *Services* - network endpoints that can be connected to pods, to publish the pod to the outside world.
 * **Single Master** - Docker Swarm can be run from a single host master, where Kubes requires a more complex control plane that involves a controller, api server, scheduler and etcd.
-* **Solution** vs **Toolbox** - Docker Swarm is a complete solution, where it works mostly in a single but opinionated way.  Kubes is a Toolbox, which can be configured to work in many different ways.  Because of this, you'll find Swarm works well for very specific things, and is easy to turn up.  Kubes, on the other hand, is more of a Toolbox.  It is available for others to create Solutions, but on its own it is not a solution.  This is why so many different ways are available to package and configure Kubes.  Kubes also has a package manager `helm`, which makes managing the variety of add-ons easier.
+* **Solution** vs **Toolbox** - Docker Swarm is a complete solution, where it works mostly in a single but opinionated way.  Kubes is a Toolbox, which can be configured to work in many different ways.  Because of this, you'll find Swarm works well for very specific things, and is easy to turn up.  Kubes, on the other hand, is more of a Toolbox.  It is available for others to create solutions, but on its own it is not a solution.  This is why so many different ways are available to package and configure Kubes.  Kubes also has a package manager `helm`, which makes managing the variety of add-ons easier.
 * **Command Availability** - Docker Swarm commands must be run from the docker Master nodes.  Kubectl commands can be run from either master or worker nodes.
 
 Sometimes you want the basic features, sometimes you want the 747 cockpit.
@@ -44,7 +44,7 @@ This is a WIP, please contact me with any corrections/updates you may feel are a
 | List services | `docker service ls` | `kubectl get services`|
 | List all containers within a service | `docker service ps {name}` | `kubectl get -n {name} pods -a`|
 | Scale out | `docker service update --replicas=3 {name}`|`kubectl scale --replicas=3 deployment/{name}`|
-| Update w/new Image | `docker service update --image={img} {name}`| ? |
+| Update w/new Image<br>(I.e. Deploy Change) | `docker service update --image={img} {name}`| ? |
 | Pull Logs for a service | `docker service logs {name}` | `kubectl logs {name}` |
 | Port Forward to remote container | n/a | `kubectl port-forward` |
 
